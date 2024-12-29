@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity 0.8.28;
 
 interface IUniswapV2Router {
     function swapExactETHForTokens(
@@ -28,7 +28,8 @@ interface IERC20 {
 }
 
 contract DCAContract {
-    address public owner;
+    address immutable public owner;
+    address immutable public weth;
     IUniswapV2Router public uniswapRouter;
 
     enum DCAType { BUY, SELL }
@@ -61,6 +62,7 @@ contract DCAContract {
     constructor(address _uniswapRouter) {
         owner = msg.sender;
         uniswapRouter = IUniswapV2Router(_uniswapRouter);
+        weth = uniswapRouter.WETH();
     }
 
     function createDCA(
@@ -70,13 +72,14 @@ contract DCAContract {
         DCAType _dcaType,
         address _depositAddress,
         uint256 _totalIterations
-    ) external returns (address strategyAddress) {
+    ) external payable returns (address strategyAddress) {
         require(_amount > 0, "Invalid amount");
-        require(_token != address(0) && _token != uniswapRouter.WETH(), "Token cannot be ETH");
+        require(_token != address(0) && _token != weth, "Token cannot be ETH or zero address");
         require(_totalIterations > 0, "Total iterations must be greater than 0");
-        require(userDepositAddresses[msg.sender][_token] == _depositAddress || userDepositAddresses[msg.sender][_token] == address(0), "Deposit address mismatch");
+        address userDepositAddress = userDepositAddresses[msg.sender][_token];
+        require(userDepositAddress == _depositAddress || userDepositAddress == address(0), "Deposit address mismatch");
 
-        if (userDepositAddresses[msg.sender][_token] == address(0)) {
+        if (userDepositAddress == address(0)) {
             userDepositAddresses[msg.sender][_token] = _depositAddress;
         }
 
@@ -94,10 +97,15 @@ contract DCAContract {
             completedIterations: 0
         });
 
-        bool success = IERC20(_token).transferFrom(msg.sender, _depositAddress, _amount * _totalIterations);
-        if (!success) {
-            delete dcaStrategies[strategyAddress];
-            revert("Token transfer failed");
+        if (_dcaType == DCAType.BUY) {
+            require(msg.value == _amount * _totalIterations, "Invalid ETH amount");
+            payable(_depositAddress).transfer(msg.value);
+        } else if (_dcaType == DCAType.SELL) {
+            bool success = IERC20(_token).transferFrom(msg.sender, _depositAddress, _amount * _totalIterations);
+            if (!success) {
+                delete dcaStrategies[strategyAddress];
+                revert("Token transfer failed");
+            }
         }
     }
 
@@ -119,7 +127,7 @@ contract DCAContract {
 
     function _executeBuy(DCA storage dca) internal {
         address[] memory path = new address[](2);
-        path[0] = uniswapRouter.WETH();
+        path[0] = weth;
         path[1] = dca.token;
 
         uint256 initialBalance = IERC20(dca.token).balanceOf(dca.depositAddress);
@@ -148,7 +156,7 @@ contract DCAContract {
 
         address[] memory path = new address[](2);
         path[0] = dca.token;
-        path[1] = uniswapRouter.WETH();
+        path[1] = weth;
 
         uint256 initialBalance = address(dca.depositAddress).balance;
 

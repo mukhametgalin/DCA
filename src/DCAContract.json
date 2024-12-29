@@ -1,0 +1,109 @@
+[
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "_uniswapRouter",
+                "type": "address"
+            }
+        ],
+        "stateMutability": "nonpayable",
+        "type": "constructor"
+    },
+    {
+        "inputs": [],
+        "name": "WETH",
+        "outputs": [
+            {
+                "internalType": "address",
+                "name": "",
+                "type": "address"
+            }
+        ],
+        "stateMutability": "pure",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "_token",
+                "type": "address"
+            },
+            {
+                "internalType": "uint256",
+                "name": "_interval",
+                "type": "uint256"
+            },
+            {
+                "internalType": "uint256",
+                "name": "_amount",
+                "type": "uint256"
+            },
+            {
+                "internalType": "enum DCAContract.DCAType",
+                "name": "_dcaType",
+                "type": "uint8"
+            },
+            {
+                "internalType": "address",
+                "name": "_depositAddress",
+                "type": "address"
+            },
+            {
+                "internalType": "uint256",
+                "name": "_totalIterations",
+                "type": "uint256"
+            }
+        ],
+        "name": "createDCA",
+        "outputs": [
+            {
+                "internalType": "address",
+                "name": "strategyAddress",
+                "type": "address"
+            }
+        ],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "strategyAddress",
+                "type": "address"
+            }
+        ],
+        "name": "executeDCA",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "strategyAddress",
+                "type": "address"
+            }
+        ],
+        "name": "withdrawFunds",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "updateRouterAddress",
+        "outputs": [
+            {
+                "internalType": "address",
+                "name": "newUniswapRouter",
+                "type": "address"
+            }
+        ],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    }
+]
